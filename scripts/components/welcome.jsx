@@ -30,7 +30,7 @@ var Welcome = React.createClass({
     });
     return (
       <div className="welcome">
-        <h1>Welcome!</h1>
+        <h1>Welcome!!</h1>
 
         <p>Gramene is a <em>curated</em>, <em>open-source</em>, <em>
           integrated data resource</em> for comparative

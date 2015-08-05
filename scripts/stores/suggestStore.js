@@ -18,6 +18,8 @@ module.exports = Reflux.createStore({
     this.listenTo(searchStore, this.setSearchState);
     this.cache = GrameneCache.init(100);
 
+    this.searchState = searchStore.getInitialState();
+
     this.suggest = _.debounce(this.suggestNoDebounce, constants.suggest.debounce);
   },
 

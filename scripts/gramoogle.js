@@ -10,5 +10,6 @@ require('../styles/main.less');
 
 var React = require('react');
 var App = React.createFactory(require('./components/app.jsx'));
+var app = new App();
 
-React.render(new App(), document.getElementById('content'));
+React.render(app, document.getElementById('content'));

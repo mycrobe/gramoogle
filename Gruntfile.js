@@ -49,7 +49,8 @@ module.exports = function (grunt) {
           },
           transform: [
             ['node-lessify', lessifyOptions],
-            ['babelify']
+            ['babelify'],
+            ['livereactload', {global: true, preventCache: false}]
           ]
         },
         src: './index.js',
@@ -72,17 +73,34 @@ module.exports = function (grunt) {
     },
 
     watch: {
-      //styles: {
-      //  files: [],
-      //  tasks: ['less'],
-      //  options: {
-      //    nospawn: true
-      //  }
-      //},
-
       browserify: {
         files: ['scripts/**/*', 'styles/*.less'],
         tasks: ['browserify:dev']
+      }
+    },
+
+    concurrent: {
+      dev: {
+        tasks: [
+          'nodemon',                  // start server
+          'shell:bundleMonitoring',   // start monitoring bundle changes
+          'watch'            // start watchify
+        ],
+        options: {
+          logConcurrentOutput: true
+        }
+      }
+    },
+
+    nodemon: {
+      dev: {
+        script: 'server.js'
+      }
+    },
+
+    shell: {
+      bundleMonitoring: {
+        command: 'node_modules/.bin/livereactload monitor build/bundle.js'
       }
     },
 
@@ -114,6 +132,6 @@ module.exports = function (grunt) {
   });
 
   grunt.registerTask('test', ['jasmine_node']);
-  grunt.registerTask('default', ['browserify:dev', 'watch']);
+  grunt.registerTask('default', ['browserify:dev', 'concurrent']);
   grunt.registerTask('package', ['browserify:production', 'test']);
 };

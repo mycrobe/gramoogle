@@ -8,7 +8,7 @@ var Q = require('q');
 var QueryActions = require('../actions/queryActions');
 var search = require('../search/search');
 
-module.exports = Reflux.createStore({
+var searchStore = Reflux.createStore({
   listenables: QueryActions,
 
   init: function () {
@@ -126,3 +126,5 @@ module.exports = Reflux.createStore({
     console.error('Error updating results', error);
   }
 });
+
+module.exports = searchStore;
