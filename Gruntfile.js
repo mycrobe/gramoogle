@@ -2,11 +2,9 @@
 
 module.exports = function (grunt) {
   require('jit-grunt')(grunt);
-
-  grunt.loadNpmTasks('grunt-jest');
-  grunt.loadNpmTasks('grunt-jsxhint');
-  grunt.loadNpmTasks('grunt-jasmine-node');
-  grunt.loadNpmTasks('grunt-flow');
+  require('matchdep').filterAll('grunt-*').forEach(grunt.loadNpmTasks);
+  var webpack = require("webpack");
+  var webpackConfig = require("./webpack.config.js");
 
   grunt.initConfig({
     less: {
@@ -33,46 +31,53 @@ module.exports = function (grunt) {
       }
     },
 
-    browserify: {
+    webpack: {
+      options: webpackConfig,
+
       dev: {
-        options: {
-          browserifyOptions: {
-            debug: true
-          },
-          transform: [
-            ['reactify', {stripTypes: true}]
-          ]
-        },
-        src: './index.js',
-        dest: 'build/bundle.js'
+        plugins: webpackConfig.plugins.concat(
+          new webpack.DefinePlugin({
+            "process.env": {
+              "NODE_ENV": JSON.stringify("development")
+            }
+          })
+        ),
+
+        devtool: "#inline-source-map",
+
+        debug: true,
+
+        watch: true, // use webpacks watcher
+        // You need to keep the grunt process alive
+
+        keepAlive: true,
+
+        progress: true, // Don't show progress
+        // Defaults to true
       },
+
       production: {
-        options: {
-          transform: [
-            ['reactify', {stripTypes: true}],
-            ['uglifyify', {global: true}]
-          ],
-          browserifyOptions: {
-            debug: false
-          }
-        },
-        src: '<%= browserify.dev.src %>',
-        dest: '<%= browserify.dev.dest %>'
+        progress: true, // Don't show progress
+        // Defaults to true
+
+        plugins: webpackConfig.plugins.concat(
+          new webpack.DefinePlugin({
+            "process.env": {
+              // This has effect on the react lib size
+              "NODE_ENV": JSON.stringify("production")
+            }
+          }),
+          new webpack.optimize.DedupePlugin(),
+          new webpack.optimize.UglifyJsPlugin()
+        )
       }
     },
 
-    watch: {
-      styles: {
-        files: ['styles/*.less'],
-        tasks: ['less'],
-        options: {
-          nospawn: true
-        }
-      },
-
-      browserify: {
-        files: 'scripts/**/*',
-        tasks: ['browserify:dev']
+    "webpack-dev-server": {
+      options: webpackConfig,
+      dev: {
+        hot: true,
+        keepAlive: true
       }
     },
 
@@ -104,6 +109,6 @@ module.exports = function (grunt) {
   });
 
   grunt.registerTask('test', ['jasmine_node']);
-  grunt.registerTask('default', ['less', 'browserify:dev', 'watch']);
-  grunt.registerTask('package', ['less', 'browserify:production', 'test']);
+  grunt.registerTask('default', ['less', 'webpack:dev', 'webpack-dev-server:dev']);
+  grunt.registerTask('package', ['less', 'webpack:production', 'test']);
 };
